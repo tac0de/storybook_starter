@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Resize PNG with Aspect Ratio</title>
+</head>
+<body>
+  <input type="file" id="upload" accept="image/png" />
+  <br />
+  <canvas id="canvas" width="80" height="80" style="display:none;"></canvas>
+  <br />
+  <a id="download" href="#" download="resized-80x80.png">Download 80x80 PNG</a>
+
+  <script>
+    document.getElementById('upload').addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        img.src = e.target.result;
+      };
+
+      img.onload = function() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        const maxSize = 80;
+        canvas.width = maxSize;
+        canvas.height = maxSize;
+        ctx.clearRect(0, 0, maxSize, maxSize);
+
+        const imgAspect = img.width / img.height;
+        const targetAspect = 1;
+
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (imgAspect > targetAspect) {
+          // Image is wider
+          drawWidth = maxSize;
+          drawHeight = maxSize / imgAspect;
+          offsetX = 0;
+          offsetY = (maxSize - drawHeight) / 2;
+        } else {
+          // Image is taller or square
+          drawWidth = maxSize * imgAspect;
+          drawHeight = maxSize;
+          offsetX = (maxSize - drawWidth) / 2;
+          offsetY = 0;
+        }
+
+        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+
+        const resizedDataURL = canvas.toDataURL('image/png');
+        const downloadLink = document.getElementById('download');
+        downloadLink.href = resizedDataURL;
+        downloadLink.style.display = 'inline';
+      };
+
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>
